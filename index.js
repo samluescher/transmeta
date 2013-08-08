@@ -1,4 +1,6 @@
-var errors = require('./errors'),
+var inherits = require('util').inherits,
+	EventEmitter = require('events').EventEmitter,
+	errors = require('./errors'),
 	util = require('./util'),
 	DataTransformError = errors.DataTransformError, ValueSkippedWarning = errors.ValueSkippedWarning, 
 	Document = require('./document'),
@@ -179,7 +181,6 @@ var FieldType = {
 	{
 		var options = options || {},
 			cast = options.cast ? Cast[options.cast] : null,
-			options = options || {},
 			singleElement = from != '*' ?
 				(!Array.isArray(from) ? from : from.length == 1 ? from[0] : null) : null;
 		return function() {
@@ -348,7 +349,7 @@ var FieldType = {
 	}
 }
 
-var FieldSetter = function(value) {
+var SetValue = function(value) {
 	return function() {
 		return value;
 	}
@@ -358,7 +359,7 @@ var FieldSetter = function(value) {
 * Iterates over fields in doc and calls a callback for each field.
 * Breaks if the callback returns false.
 *
-* fields can be either a string, an array of strings, or '*' denoting
+* Fields can be either a string, an array of strings, or '*' denoting
 * all fields in doc. 
 */
 var	iterFields = function(fields, doc, callback) {
@@ -398,18 +399,24 @@ following:
 		}
 	]
 */
+
 var DataTransform = function(descripts, options) 
 {
+    EventEmitter.call(this);
 	var fields = {}, setters = {},
 		descripts = !Array.isArray(descripts) ? [] : descripts;
 	this.fields = [];
 	this.setters = {};
 	this.descripts = [];
+	this.verbose = false;
+	this.series = [];
 	if (descripts) this.addFields(descripts);
 	this.options = _.cloneextend({
 		strict: true
 	}, options || {});
 };
+
+inherits(DataTransform, EventEmitter);
 
 DataTransform.prototype.addFields = function(descripts)
 {
@@ -420,26 +427,67 @@ DataTransform.prototype.addFields = function(descripts)
 
 DataTransform.prototype.addField = function(d)
 {
-	if (d.set) {
-		this.setters[d.to] = FieldSetter(d.set);
-	} else if (!d.type || !FieldType[d.type]) {
-		throw new ValidationError('Invalid field type: ' + d.type);
-	} else {
-		this.setters[d.to] = FieldType[d.type](d.from || d.to, d.options);
-	}
 	this.fields.push({
 		name: d.to,
-		label: (d.from && d.from != '*' ?
-			(Array.isArray(d.from) ? d.from.join(', ') : d.from) : d.to),
+		label: d.label ? d.label : 
+			/*(d.from && d.from != '*' ?
+				(Array.isArray(d.from) ? d.from.join(', ') : d.from) : d.to)*/
+			d.to.split('.').pop(),
 		type: d.type
 	});
 	this.descripts.push(d);
+
+	if (d.set) {
+		this.setters[d.to] = SetValue(d.set);
+	} else if (!d.type || !FieldType[d.type]) {
+		throw new ValidationError('Invalid field type: ' + d.type);
+	} else if (d.series) {
+		var opts = _.cloneextend(d.options || {}, {
+				cast: d.type
+			}),
+			transform = d.series.length ? new DataTransform(d.series) : null;
+		this.setters[d.to] = FieldType.Array(d.from || d.to, opts);
+		this.series.push({
+			to: d.to,
+			from: d.from,
+			transform: transform
+		});
+		if (transform) {
+			this.fields = this.fields.concat(transform.fields);
+		}
+	} else {
+		this.setters[d.to] = FieldType[d.type](d.from || d.to, d.options);
+	}
 };
 
-DataTransform.prototype.transformModel = function(fromDoc, ToModel, config) 
+DataTransform.prototype.emitData = function(transformed, ToModel, numErrors)
 {
-	var transformed = {}
-		errors = 0;
+	var m = null;
+	if (ToModel && (!this.options.strict || !numErrors)) {
+		m = new ToModel({}, false);
+		for (var key in transformed) {
+			m.set(key, transformed[key]);
+		}
+	}
+
+	if (this.verbose) {
+		//console.log('original:', fromDoc);
+		console.log('transformed:', transformed);
+		console.log('model:', m);
+	}
+
+	var emit = {
+		model: (!this.options.strict || !numErrors ? m : null),
+		transformed: transformed
+	};
+
+	this.emit('data', emit.model, emit.transformed);
+};
+
+DataTransform.prototype.__transformDocument = function(fromDoc)
+{
+	var transformed = {},
+		numErrors = 0;
 
 	for (var to in this.setters) {
 		var f = this.setters[to];
@@ -449,28 +497,45 @@ DataTransform.prototype.transformModel = function(fromDoc, ToModel, config)
 			var err = transformed[to],
 				log = err instanceof ValueSkippedWarning ? 'warn' : 'error';
 			console[log](err.name + ' on field ' + to + ':', err.message);
-			errors++;
+			numErrors++;
 		}
 	}
 
-	var m = null;
-	if (ToModel && (!this.options.strict || !errors)) {
-		m = new ToModel({}, false);
-		for (var key in transformed) {
-			m.set(key, transformed[key]);
-		}
-	}
-
-	if (config && config.DEBUG) {
-		console.log('original:', fromDoc);
-		console.log('transformed:', transformed);
-		console.log('model:', m);
-	}
-	
 	return {
-		model: (!this.options.strict || !errors ? m : null),
-		transformed: transformed
+		transformed: transformed,
+		numErrors: numErrors
 	};
+};
+
+DataTransform.prototype.transform = function(fromDoc, ToModel) 
+{
+	var self = this,
+		result = this.__transformDocument(fromDoc);
+
+	if (!this.series.length) {
+		this.emitData(result.transformed, ToModel, result.numErrors);
+	} else {
+		this.series.forEach(function(series) {
+			result.transformed[series.to].forEach(function(value, index) {
+				if (self.verbose) {
+					console.log('emitting series: ' + series.to + '/' + index);
+				}
+				var data = _.clone(result.transformed);
+				data[series.to] = value;
+				if (series.transform) {
+					var subResult = series.transform.__transformDocument(new Document(
+						_.cloneextend(data, {
+							'$series': {
+								from: series.from[index],
+								index: index
+							} 
+						}, data)));
+					data = _.cloneextend(data, subResult.transformed);
+				}
+				self.emitData(data, ToModel, result.numErrors + subResult.numErrors);
+			});
+		})
+	}
 };
 
 module.exports = {
