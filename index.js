@@ -1,13 +1,14 @@
-var inherits = require('util').inherits,
-	EventEmitter = require('events').EventEmitter,
-	errors = require('./errors'),
+var errors = require('./errors'),
 	util = require('./util'),
 	DataTransformError = errors.DataTransformError, ValueSkippedWarning = errors.ValueSkippedWarning, 
 	Document = require('./document'),
 	coordinates = require('../../../geogoose/').coordinates,
 	ValidationError = errors.ValidationError,
 	console = require('../../../ext-console.js'),
-	_ = require('cloneextend');
+	_ = require('cloneextend'),
+	inherits = require('util').inherits,
+	EventEmitter = require('events').EventEmitter,
+	moment = require('moment');
 
 var ARRAY_SEPARATORS = /[,;]/;
 
@@ -39,9 +40,7 @@ var Filter = {
 	},
 
 	isValidDate: function(d) {
-		if (Object.prototype.toString.call(d) !== "[object Date]")
-	    	return false;
-		return !isNaN(d.getTime());
+		return moment(d).isValid();
 	},
 
 	notEmpty: function(val) {
