@@ -10,12 +10,13 @@ var errors = require('./errors'),
 	EventEmitter = require('events').EventEmitter,
 	moment = require('moment');
 
-var ARRAY_SEPARATORS = /[,;]/;
+var ARRAY_SEPARATORS = /[,;]/,
+	DATE_NON_PERMISSIVE_EXCLUDE = /^[0-9]+$/,
+	NUMBER_DECIMAL = /^\s*(\+|-)?((\d+(\.\d+)?)|(\.\d+))\s*$/;
 
 function isErr(val) {
 	return val instanceof Error;
 }
-
 
 var Filter = {
 
@@ -39,8 +40,15 @@ var Filter = {
 		return val % 2 == 0;
 	},
 
-	isValidDate: function(d) {
+	isValidDate: function(d, permissive) {
+		if (!permissive && permissive != undefined) {
+			if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
+		}
 		return moment(d).isValid();
+	},
+
+	isDecimal: function(d) {
+		return (d + '').search(NUMBER_DECIMAL) != -1; 
 	},
 
 	notEmpty: function(val) {
@@ -142,9 +150,8 @@ var Cast = {
 	{
 		var options = options || {};
 		if ((Array.isArray(value) && value.length == 3) || typeof(value) == 'string') {
-			var date = new Date(value);
-			if (Filter.isValidDate(date)) {
-				return date;
+			if (Filter.isValidDate(value)) {
+				return moment(value);
 			}
 		}
 	}
