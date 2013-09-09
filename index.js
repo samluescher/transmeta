@@ -44,7 +44,7 @@ var Filter = {
 		if (!permissive && permissive != undefined) {
 			if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
 		}
-		return moment(d).isValid();
+		return d && true; /*d.isValid();*/
 	},
 
 	isDecimal: function(d) {
@@ -148,10 +148,16 @@ var Cast = {
 
 	Date: function(value, options) 
 	{
-		var options = options || {};
-		if ((Array.isArray(value) && value.length == 3) || typeof(value) == 'string') {
-			if (Filter.isValidDate(value)) {
-				return moment(value);
+		var options = options || {},
+			isArray = Array.isArray(value);
+		if ((isArray && value.length == 3) || typeof(value) == 'string') {
+			if (isArray) {
+				value = _.clone(value);
+				value[1]--;
+			}
+			var d = moment.call(moment, value);
+			if (d.isValid()) {
+				return d._d;
 			}
 		}
 	}
