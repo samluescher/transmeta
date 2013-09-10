@@ -9,14 +9,14 @@ util.inherits(DataTransformError, basicErrors.BasicError);
 DataTransformError.prototype.name = 'DataTransformError';
 DataTransformError.prototype.message = 'Transform Error';
 
-var ValueSkippedWarning = function(msg, errors) {
-	ValueSkippedWarning.super_.call(this, msg, this.constructor);
+var FilterWarning = function(msg, errors) {
+	FilterWarning.super_.call(this, msg, this.constructor);
 }
-util.inherits(ValueSkippedWarning, basicErrors.BasicError);
-ValueSkippedWarning.prototype.name = 'ValueSkippedWarning';
-ValueSkippedWarning.prototype.message = 'Value Skipped';
+util.inherits(FilterWarning, basicErrors.BasicError);
+FilterWarning.prototype.name = 'FilterWarning';
+FilterWarning.prototype.message = 'Value Skipped';
 
 module.exports = {
 	DataTransformError: DataTransformError,
-	ValueSkippedWarning: ValueSkippedWarning
+	FilterWarning: FilterWarning
 };

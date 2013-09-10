@@ -1,6 +1,6 @@
 var errors = require('./errors'),
 	util = require('./util'),
-	DataTransformError = errors.DataTransformError, ValueSkippedWarning = errors.ValueSkippedWarning, 
+	DataTransformError = errors.DataTransformError, FilterWarning = errors.FilterWarning, 
 	Document = require('./document'),
 	coordinates = require('../../../geogoose/').coordinates,
 	ValidationError = errors.ValidationError,
@@ -20,75 +20,134 @@ function isErr(val) {
 
 var Filter = {
 
-	isEmpty: function(val) {
-		return val == '' || val == undefined || val == null;
+	isEmpty: function(val, warnings) {
+		var ret = val == '' || val == undefined || val == null || (Array.isArray(val) && !val.length);
+		if (!ret && warnings) {
+			warnings.push('Not empty: ' + val);
+		}
+		return ret;
 	},
 
-	isZero: function(val) {
-		return val === 0;
+	isZero: function(val, warnings) {
+		var ret = val === 0;
+		if (!ret && warnings) {
+			warnings.push('Not zero: ' + val);
+		}
+		return ret;
 	},
 
-	isFuture: function(val) {
-		return Filter.isValidDate(val) && val > new Date();
+	isFuture: function(val, warnings) {
+		var ret = Filter.isValidDate(val) && val > new Date();
+		if (!ret && warnings) {
+			warnings.push('Not zero: ' + val);
+		}
+		return ret;
 	},
 
-	isOdd: function(val) {
-		return val % 2 != 0;
+	isOdd: function(val, warnings) {
+		var ret = val % 2 != 0;
+		if (!ret && warnings) {
+			warnings.push('Not odd: ' + val);
+		}
+		return ret;
 	},
 
-	isEven: function(val) {
-		return val % 2 == 0;
+	isEven: function(val, warnings) {
+		var ret = val % 2 == 0;
+		if (!ret && warnings) {
+			warnings.push('Not even: ' + val);
+		}
+		return ret;
 	},
 
-	isValidDate: function(d, permissive) {
-		if (!permissive && permissive != undefined) {
+	isValidDate: function(d, permissive, warnings) {
+		if ((!permissive && permissive != undefined || Array.isArray(permissive))) {
 			if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
 		}
-		return d && true; /*d.isValid();*/
+		var ret = d && true; /*d.isValid();*/
+		if (!ret && warnings) {
+			warnings.push('Not a valid date: ' + val);
+		}
+		return ret;
 	},
 
-	isDecimal: function(d) {
-		return (d + '').search(NUMBER_DECIMAL) != -1; 
+	isDecimal: function(d, warnings) {
+		var ret = (d + '').search(NUMBER_DECIMAL) != -1; 
+		if (!ret && warnings) {
+			warnings.push('Not decimal: ' + val);
+		}
+		return ret;
 	},
 
-	notEmpty: function(val) {
-		return !Filter.isEmpty(val);
+	notEmpty: function(val, warnings) {
+		var ret = !Filter.isEmpty(val);
+		if (!ret && warnings) {
+			warnings.push('Is empty: ' + val);
+		}
+		return ret;
 	},
 
-	notZero: function(val) {
-		return !Filter.isZero(val);
+	notZero: function(val, warnings) {
+		var ret = !Filter.isZero(val);
+		if (!ret && warnings) {
+			warnings.push('Is zero: ' + val);
+		}
+		return ret;
 	},
 
-	notFuture: function(val) {
-		return !Filter.isFuture(val);
+	notFuture: function(val, warnings) {
+		var ret = !Filter.isFuture(val);
+		if (!ret && warnings) {
+			warnings.push('Is future: ' + val);
+		}
+		return ret;
 	},
 
-	lt: function(val, l) {
-		return val < l;
+	lt: function(val, l, warnings) {
+		var ret = val < l;
+		if (!ret && warnings) {
+			warnings.push('Not lt:' + l + ': ' + val);
+		}
+		return ret;
 	},
 
-	lte: function(val, l) {
-		return val <= l;
+	lte: function(val, l, warnings) {
+		var ret = val <= l;
+		if (!ret && warnings) {
+			warnings.push('Not lte:' + l + ': ' + val);
+		}
+		return ret;
 	},
 
-	gt: function(val, g) {
-		return val > g;
+	gt: function(val, g, warnings) {
+		var ret = val > g;
+		if (!ret && warnings) {
+			warnings.push('Not gt:' + g + ': ' + val);
+		}
+		return ret;
 	},
 
-	gte: function(val, g) {
-		return val >= g;
+	gte: function(val, g, warnings) {
+		var ret = val >= g;
+		if (!ret && warnings) {
+			warnings.push('Not gte:' + g + ': ' + val);
+		}
+		return ret;
 	}
 
 };
 
 
-var filterValue = function(val, filters) {
+var filterValue = function(val, filters, warnings) {
+	if (!warnings) {
+		warnings = [];
+	}
 	var makeFilter = function(args) {
 		if (typeof(args) == 'function') return args;
-		var args = args.split(','),
+		var args = args.split(':'),
 			f = Filter[args.shift()];
 		return function(val) {
-			return f.apply(null, [val].concat(args));
+			return f.apply(null, [val].concat(args).concat([warnings]));
 		};
 	};
 	if (Array.isArray(val)) {
@@ -111,16 +170,11 @@ var Cast = {
 	Number: function(value, options)
 	{
 		var options = options || {};
-		if (options.skipEmpty && isEmpty(value)) {
-			return;
-		}
 		var num = Number(value);
 		if (isNaN(num)) {
 			return new DataTransformError('Not a number');
 		}
-		if (!options.skipZero || num != 0) {
-			return num;
-		}
+		return num;
 	},
 
 	String: function(value, options) 
@@ -128,9 +182,7 @@ var Cast = {
 		var options = options || {};
 		if (value != undefined) {
 			var str = '' + value;
-			if (!options.skipEmpty || value != '') {
-				return str;
-			}
+			return str;
 		}
 	},
 
@@ -156,7 +208,7 @@ var Cast = {
 				value[1]--;
 			}
 			var d = moment.call(moment, value);
-			if (d.isValid()) {
+			if (d && d.isValid()) {
 				return d._d;
 			}
 		}
@@ -173,16 +225,8 @@ var FieldType = {
 			iterFields(from, this, function(num) {
 				var num = Cast.Number(num, options);
 				if (num != undefined) {
-					if (options.min != undefined && num < options.min) {
-						ret = new ValueSkippedWarning('Skipping low number: ' + num);
-						return false;
-					} else if (options.max != undefined && num > options.max) {
-						ret = new ValueSkippedWarning('Skipping high number:' + num);
-						return false;
-					} else {
-						ret = num;
-						return false;
-					}
+					ret = num;
+					return false;
 				}
 			});
 			return ret;
@@ -214,9 +258,7 @@ var FieldType = {
 									arr = casted;
 									return false;
 								}
-								if (!options.skipEmpty || !isEmpty(casted)) {
-									arr.push(casted);
-								}
+								arr.push(casted);
 							}
 						}
 					}
@@ -226,9 +268,7 @@ var FieldType = {
 						arr = casted;
 						return false;
 					}
-					if (!options.skipEmpty || !isEmpty(casted)) {
-						arr.push(casted);
-					}
+					arr.push(casted);
 				}
 			});
 			return arr;
@@ -238,6 +278,7 @@ var FieldType = {
 	Date: function(from, options) 
 	{
 		var options = options || {},
+			filters = options.filters || {},
 			singleElement = from != '*' ?
 				(!Array.isArray(from) ? from : from.length == 1 ? from[0] : null) : null;
 		return function() {
@@ -258,11 +299,7 @@ var FieldType = {
 				}
 			}
 			if (date) {
-				if (!options.skipFuture || date <= new Date()) {
-					return date;			
-				} else {
-					return new ValueSkippedWarning('Skipping future date: ' + date);
-				}
+				return date;			
 			}
 		};
 	},
@@ -279,9 +316,7 @@ var FieldType = {
 				var arr = toArray.call(this);
 				if (arr) {
 					var joined = arr.join(options.join || ', ');
-					if (!options.skipEmpty || !isEmpty(joined)) {
-						return joined;
-					}
+					return joined;
 				}
 			}
 		} else {
@@ -294,9 +329,7 @@ var FieldType = {
 					}
 				});
 				var formatted = options.format.format(strings); 
-				if (!options.skipEmpty || !isEmpty(joined)) {
-					return formatted;
-				}
+				return formatted;
 			};
 		}
 	},
@@ -307,7 +340,6 @@ var FieldType = {
 			arrayOptions = _.cloneextend(options, {
 				cast: 'Number',
 				split: true,
-				skipZero: false
 			}),
 			toArray = FieldType.Array(from, arrayOptions);
 		return function() {
@@ -318,11 +350,7 @@ var FieldType = {
 					return new DataTransformError('Needs 2D');
 				}
 				arr = coordinates.coordinates2d(arr[0], arr[1]);
-				if (!options.skipZero || (arr[0] != 0 && arr[1] != 0)) {
-					return arr;
-				} else {
-					return new ValueSkippedWarning('Skipping 0,0');
-				}
+				return arr;
 			}
 		}
 	},
@@ -353,9 +381,6 @@ var FieldType = {
 					obj[key] = val;
 				}
 			});
-			if (obj == null && options.skipEmpty) {
-				return new ValueSkippedWarning('Skipping null');
-			}
 			return obj;
 		}
 	}
@@ -419,6 +444,7 @@ var DataTransform = function(descripts, options)
 		descripts = !Array.isArray(descripts) ? [] : descripts;
 	this.fields = [];
 	this.setters = {};
+	this.filters = {};
 	this.descripts = [];
 	this.verbose = false;
 	this.series = [];
@@ -449,6 +475,8 @@ DataTransform.prototype.addField = function(d)
 	});
 	this.descripts.push(d);
 
+	var opts = d.options || {};
+
 	if (d.set) {
 		this.setters[d.to] = SetValue(d.set);
 	} else if (!d.type || !FieldType[d.type]) {
@@ -459,6 +487,7 @@ DataTransform.prototype.addField = function(d)
 			}),
 			transform = d.series.length ? new DataTransform(d.series) : null;
 		this.setters[d.to] = FieldType.Array(d.from || d.to, opts);
+		this.filters[d.to] = opts.filters || {};
 		this.series.push({
 			to: d.to,
 			from: d.from,
@@ -470,6 +499,7 @@ DataTransform.prototype.addField = function(d)
 	} else {
 		this.setters[d.to] = FieldType[d.type](d.from || d.to, d.options);
 	}
+	this.filters[d.to] = opts.filters;
 };
 
 DataTransform.prototype.emitData = function(transformed, ToModel, numErrors)
@@ -502,15 +532,29 @@ DataTransform.prototype.__transformDocument = function(fromDoc)
 		numErrors = 0;
 
 	for (var to in this.setters) {
-		var f = this.setters[to];
+		var f = this.setters[to],
+			filters = this.filters[to],
+			transformedValue = f.apply(fromDoc, [transformed]);
 
-		transformed[to] = f.apply(fromDoc, [transformed]);
+		if (filters) {
+			var warnings = [],
+				filteredValue = filterValue(transformedValue, filters, warnings);
+			if (warnings.length && (!Array.isArray(filteredValue) || !filteredValue.length)) {
+				transformed[to] = new FilterWarning(warnings.join(', '));
+			} else {
+				transformed[to] = filteredValue;
+			}
+		} else {
+			transformed[to] = transformedValue;
+		}
+		
 		if (isErr(transformed[to])) {
 			var err = transformed[to],
-				log = err instanceof ValueSkippedWarning ? 'warn' : 'error';
+				log = err instanceof FilterWarning ? 'warn' : 'error';
 			console[log](err.name + ' on field ' + to + ':', err.message);
 			numErrors++;
 		}
+
 	}
 
 	return {
@@ -553,7 +597,7 @@ DataTransform.prototype.transform = function(fromDoc, ToModel)
 module.exports = {
 	DataTransform: DataTransform,
 	DataTransformError: DataTransformError,
-	ValueSkippedWarning: ValueSkippedWarning,
+	FilterWarning: FilterWarning,
 	Cast: Cast,
 	FieldType: FieldType,
 	Document: Document,
