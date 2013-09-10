@@ -64,7 +64,7 @@ var Filter = {
 		if ((!permissive && permissive != undefined || Array.isArray(permissive))) {
 			if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
 		}
-		var ret = d && Cast.Date(d)
+		var ret = d && Cast.Date(d);
 		if (!ret && warnings) {
 			warnings.push('Not a valid date: ' + val);
 		}
