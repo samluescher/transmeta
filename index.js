@@ -11,7 +11,7 @@ var errors = require('./errors'),
 	moment = require('moment');
 
 var ARRAY_SEPARATORS = /[,;]/,
-	DATE_NON_PERMISSIVE_EXCLUDE = /^[0-9]+$/,
+	DATE_NON_PERMISSIVE_EXCLUDE = /^([0-9]+|[a-zA-Z0-9#]+)$/,
 	NUMBER_DECIMAL = /^\s*(\+|-)?((\d+(\.\d+)?)|(\.\d+))\s*$/;
 
 function isErr(val) {
