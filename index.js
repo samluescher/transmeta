@@ -11,7 +11,7 @@ var errors = require('./errors'),
 	moment = require('moment');
 
 var ARRAY_SEPARATORS = /[,;]/,
-	DATE_NON_PERMISSIVE_EXCLUDE = /^[0-9]+$/,
+	DATE_NON_PERMISSIVE_EXCLUDE = /^([0-9]+|[a-zA-Z0-9#]+)$/,
 	NUMBER_DECIMAL = /^\s*(\+|-)?((\d+(\.\d+)?)|(\.\d+))\s*$/;
 
 function isErr(val) {
@@ -64,7 +64,7 @@ var Filter = {
 		if ((!permissive && permissive != undefined || Array.isArray(permissive))) {
 			if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
 		}
-		var ret = d && true; /*d.isValid();*/
+		var ret = d && Cast.Date(d)
 		if (!ret && warnings) {
 			warnings.push('Not a valid date: ' + val);
 		}
