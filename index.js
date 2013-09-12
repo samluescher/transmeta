@@ -506,10 +506,7 @@ DataTransform.prototype.emitData = function(transformed, ToModel, numErrors)
 {
 	var m = null;
 	if (ToModel && (!this.options.strict || !numErrors)) {
-		m = new ToModel({}, false);
-		for (var key in transformed) {
-			m.set(key, transformed[key]);
-		}
+		m = new ToModel(transformed, false);
 	}
 
 	if (this.verbose) {
