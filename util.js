@@ -1,3 +1,5 @@
+var	_ = require('cloneextend');
+
 /*
 Returns an attribute of an object by path in dot notation.
 Example:
@@ -37,7 +39,17 @@ var setAttr = function(obj, path, value) {
 	_set(obj, path.split('.'));
 };
 
+var expandObj = function(obj) {
+	var retObj = {};
+	for (var k in _.clone(obj)) {
+		setAttr(retObj, k, obj[k]);
+	}
+	return retObj;
+};
+
 module.exports = {
 	getAttr: getAttr,
-	setAttr: setAttr
+	setAttr: setAttr,
+	expandObj: expandObj
 };
+

@@ -505,7 +505,7 @@ DataTransform.prototype.emitData = function(transformed, ToModel, numErrors)
 {
 	var m = null;
 	if (ToModel && (!this.options.strict || !numErrors)) {
-		m = new ToModel(transformed, false);
+		m = new ToModel(util.expandObj(transformed), false);
 	}
 
 	if (this.verbose) {
