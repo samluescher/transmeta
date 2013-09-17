@@ -39,7 +39,7 @@ var Filter = {
 	isFuture: function(val, warnings) {
 		var ret = Filter.isValidDate(val) && val > new Date();
 		if (!ret && warnings) {
-			warnings.push('Not zero: ' + val);
+			warnings.push('Not future: ' + val);
 		}
 		return ret;
 	},
@@ -61,10 +61,11 @@ var Filter = {
 	},
 
 	isValidDate: function(d, permissive, warnings) {
-		if ((!permissive && permissive != undefined || Array.isArray(permissive))) {
-			if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
+		if ((typeof d == 'string' || typeof d == 'number') 
+			&& (!permissive && permissive != undefined || Array.isArray(permissive))) {
+				if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
 		}
-		var ret = d && Cast.Date(d);
+		var ret = d && moment(Cast.Date(d)).isValid();
 		if (!ret && warnings) {
 			warnings.push('Not a valid date: ' + val);
 		}
@@ -202,15 +203,15 @@ var Cast = {
 	{
 		var options = options || {},
 			isArray = Array.isArray(value);
-		if ((isArray && value.length == 3) || typeof(value) == 'string') {
+		if (isArray && value.length == 3) {
 			if (isArray) {
 				value = _.clone(value);
 				value[1]--;
 			}
-			var d = moment.call(moment, value);
-			if (d && d.isValid()) {
-				return d._d;
-			}
+		}
+		var d = moment.call(moment, value);
+		if (d && d.isValid()) {
+			return d._d;
 		}
 	}
 }
