@@ -11,7 +11,8 @@ var errors = require('./errors'),
 	moment = require('moment');
 
 var ARRAY_SEPARATORS = /[,;]/,
-	DATE_NON_PERMISSIVE_EXCLUDE = /^([0-9]+|[a-zA-Z0-9#]+)$/,
+	// matches "Mon Jan 01 2001 00:00:00 GMT-0500 (EST)" or "2001-12-12T12:00:11.333Z", but not "District 9"
+	DATE_NON_PERMISSIVE_INCLUDE = /^[\ a-zA-Z]*([0-9]+([\:\-\/\ \.T]+|$)){2,}[0-9]*(([A-Z+]{1,3})?([\+\-][0-9\:]+(\ \([A-Z]{1,3}\))?)?)?$/,
 	NUMBER_DECIMAL = /^\s*(\+|-)?((\d+(\.\d+)?)|(\.\d+))\s*$/;
 
 function isErr(val) {
@@ -63,7 +64,7 @@ var Filter = {
 	isValidDate: function(d, permissive, warnings) {
 		if ((typeof d == 'string' || typeof d == 'number') 
 			&& (!permissive && permissive != undefined || Array.isArray(permissive))) {
-				if ((d + '').match(DATE_NON_PERMISSIVE_EXCLUDE)) return false;
+				if (!(d + '').match(DATE_NON_PERMISSIVE_INCLUDE)) return false;
 		}
 		var date = moment.call(moment, d),
 			ret = date && date.isValid();
