@@ -2,7 +2,6 @@ var errors = require('./errors'),
 	util = require('./util'),
 	DataTransformError = errors.DataTransformError, FilterWarning = errors.FilterWarning, 
 	Document = require('./document'),
-	coordinates2d = require('../../../geogoose/coordinates').coordinates2d,
 	ValidationError = errors.ValidationError,
 	console = require('../../../ext-console.js'),
 	_ = require('cloneextend'),
@@ -352,7 +351,7 @@ var FieldType = {
 				if (arr.length != 2) {
 					return new DataTransformError('Needs 2D');
 				}
-				return coordinates2d(arr[0], arr[1]);
+				return arr;
 			}
 		}
 	},
