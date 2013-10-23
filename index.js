@@ -4,7 +4,7 @@ var errors = require('./errors'),
 	Document = require('./document'),
 	ValidationError = errors.ValidationError,
 	console = require('../../../ext-console.js'),
-	_ = require('cloneextend'),
+	_ = require('underscore'),
 	inherits = require('util').inherits,
 	EventEmitter = require('events').EventEmitter,
 	moment = require('moment');
@@ -308,9 +308,9 @@ var FieldType = {
 
 	String: function(from, options) 
 	{
-		var options = options || {};
+		var options = options ? _.clone(options) : {};
 		if (!options.format) {
-			var arrayOptions = _.cloneextend(options, {
+			var arrayOptions = _.extend(options, {
 					'cast': 'String'
 				}),
 				toArray = FieldType.Array(from, arrayOptions);
@@ -338,8 +338,8 @@ var FieldType = {
 
 	LngLat: function(from, options) 
 	{
-		var options = options || {},
-			arrayOptions = _.cloneextend(options, {
+		var options = options ? _.clone(options) : {},
+			arrayOptions = _.extend(options, {
 				cast: 'Number',
 				split: true,
 			}),
@@ -377,7 +377,7 @@ var FieldType = {
 			var obj = {};
 			iterFields(from, this, function(val, key) {
 				if ((singleElement || options.expand) && typeof val == 'object') {
-					obj = _.cloneextend(obj, val);
+					obj = _.extend(obj, val);
 				} else {
 					obj[key] = val;
 				}
@@ -450,7 +450,7 @@ var DataTransform = function(descripts, options)
 	this.verbose = false;
 	this.series = [];
 	if (descripts) this.addFields(descripts);
-	this.options = _.cloneextend({
+	this.options = _.extend({
 		strict: true
 	}, options || {});
 };
@@ -483,7 +483,7 @@ DataTransform.prototype.addField = function(d)
 	} else if (!d.type || !FieldType[d.type]) {
 		throw new ValidationError('Invalid field type: ' + d.type);
 	} else if (d.series) {
-		var opts = _.cloneextend(d.options || {}, {
+		var opts = _.extend(d.options ? _.clone(d.options) : {}, {
 				cast: d.type
 			}),
 			transform = d.series.length ? new DataTransform(d.series) : null;
@@ -578,13 +578,13 @@ DataTransform.prototype.transform = function(fromDoc, ToModel)
 				data[series.to] = value;
 				if (series.transform) {
 					var subResult = series.transform.__transformDocument(new Document(
-						_.cloneextend(data, {
+						_.extend(_.clone(data), {
 							'$series': {
 								from: series.from[index],
 								index: index
 							} 
-						}, data)));
-					data = _.cloneextend(data, subResult.transformed);
+						})));
+					data = _.extend(data, subResult.transformed);
 				}
 				self.emitData(data, ToModel, result.numErrors + subResult.numErrors);
 			});

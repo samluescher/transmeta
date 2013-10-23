@@ -1,4 +1,4 @@
-var	_ = require('cloneextend');
+var	_ = require('underscore');
 
 /*
 Returns an attribute of an object by path in dot notation.
