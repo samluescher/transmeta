@@ -574,24 +574,26 @@ DataTransform.prototype.transform = function(fromObj, ToModel)
         this.emitData(result.transformed, ToModel, result.numErrors);
     } else {
         this.series.forEach(function(series) {
-            result.transformed[series.to].forEach(function(value, index) {
-                if (self.verbose) {
-                    console.log('emitting series: ' + series.to + '/' + index);
-                }
-                var data = _.clone(result.transformed);
-                data[series.to] = value;
-                if (series.transform) {
-                    var subResult = series.transform.__transformDocument(new Document(
-                        _.extend(_.clone(data), {
-                            '$series': {
-                                from: series.from[index],
-                                index: index
-                            } 
-                        })));
-                    data = _.extend(data, subResult.transformed);
-                }
-                self.emitData(data, ToModel, result.numErrors + subResult.numErrors);
-            });
+            if (Array.isArray(result.transformed[series.to])) {
+                result.transformed[series.to].forEach(function(value, index) {
+                    if (self.verbose) {
+                        console.log('emitting series: ' + series.to + '/' + index);
+                    }
+                    var data = _.clone(result.transformed);
+                    data[series.to] = value;
+                    if (series.transform) {
+                        var subResult = series.transform.__transformDocument(new Document(
+                            _.extend(_.clone(data), {
+                                '$series': {
+                                    from: series.from[index],
+                                    index: index
+                                } 
+                            })));
+                        data = _.extend(data, subResult.transformed);
+                    }
+                    self.emitData(data, ToModel, result.numErrors + subResult.numErrors);
+                });
+            }
         })
     }
 };
