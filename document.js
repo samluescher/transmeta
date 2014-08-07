@@ -1,23 +1,24 @@
 var util = require('./util');
 
-var Document = function(doc) {
-	this.doc = doc;
+var Document = function(attributes) {
+	this.attributes = attributes;
 };
 
 Document.prototype.toObject = function() {
-	return this.doc;	
+	return this.attributes;	
 };
 
 Document.prototype.get = function(attr) {
-	return util.getAttr(this.doc, attr);
+	return util.getAttr(this.attributes, attr);
 };
 
 Document.prototype.set = function(attr, value) {
-	util.setAttr(this.doc, attr, value);
+	console.log('setAttr', attr);
+	util.setAttr(this.attributes, attr, value);
 };
 
 Document.prototype.keys = function() {
-	return Object.keys(this.doc);
+	return Object.keys(this.attributes);
 };
 
 module.exports = Document;

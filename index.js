@@ -520,7 +520,11 @@ DataTransform.prototype.emitData = function(transformed, ToModel, numErrors)
 		transformed: transformed
 	};
 
-	this.emit('data', emit.model, emit.transformed);
+	if (ToModel) {
+		this.emit('data', emit.model, emit.transformed);
+	} else {
+		this.emit('data', emit.transformed);
+	}
 };
 
 DataTransform.prototype.__transformDocument = function(fromDoc)
@@ -560,9 +564,10 @@ DataTransform.prototype.__transformDocument = function(fromDoc)
 	};
 };
 
-DataTransform.prototype.transform = function(fromDoc, ToModel) 
+DataTransform.prototype.transform = function(fromObj, ToModel) 
 {
 	var self = this,
+		fromDoc = typeof fromObj.get == 'function' ? fromObj : new Document(fromObj),
 		result = this.__transformDocument(fromDoc);
 
 	if (!this.series.length) {
