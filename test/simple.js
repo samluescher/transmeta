@@ -1,4 +1,4 @@
-var transmeta = require('../'),
+var transmeta = require('../lib/'),
     assert = require('assert');
 
 describe('Simple transformation', function() {
@@ -98,11 +98,11 @@ describe('Simple transformation', function() {
 
     it('should correctly apply filters', function() {
         assert.deepEqual(
-            transmeta.filterValue(sourceToFilter.array1, dataTransformFiltered.descripts[0].options.filters),
+            transmeta.filterValue(sourceToFilter.array1, dataTransformFiltered.meta[0].options.filters),
             [2, 4]
         );
         assert.equal(
-            transmeta.filterValue(1, dataTransformFiltered.descripts[1].options.filters),
+            transmeta.filterValue(1, dataTransformFiltered.meta[1].options.filters),
             undefined
         );
     });

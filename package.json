@@ -1,35 +1,36 @@
 {
   "name": "transmeta",
   "version": "0.8.0",
-  "description": "",
+  "description": "A data transformation library to convert and filter JSON documents into differently structured data, using simple transformation descriptions.",
   "engines": {
-	"node": "0.8"
+    "node": "0.8"
+  },
+  "dependencies": {
+    "underscore": ">=1.5",
+    "create-error": ">=0.3.1",
+    "moment": ">=2.8.1"
   },
   "main": "lib",
-  "dependencies": {
-	"underscore": ">=1.5",
-	"create-error": ">=0.3.1",
-	"moment": ">=2.8.1"
-  },
   "directories": {
-	"lib": "lib",
-	"test": "test"
+    "lib": "lib",
+    "test": "test"
   },
   "scripts": {
-	"test": "npm install && mocha test"
+    "test": "npm install && mocha test"
   },
   "repository": {
-	"type": "git",
-	"url": "https://github.com/samluescher/transmeta.git"
+    "type": "git",
+    "url": "https://github.com/samluescher/transmeta.git"
   },
   "keywords": [
-	"GeoJSON",
-	"Mongoose",
-	"Node.js"
+    "data",
+    "transformation",
+    "filter",
+    "Node.js"
   ],
   "author": "Samuel Luescher <sam@samluescher.net>",
   "license": "MIT",
   "bugs": {
-	"url": "https://github.com/samluescher/transmeta/issues"
+    "url": "https://github.com/samluescher/transmeta/issues"
   }
 }

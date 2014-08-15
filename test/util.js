@@ -1,4 +1,4 @@
-var util = require('../util'),
+var util = require('../lib/util'),
 	assert = require('assert');
 
 describe('Util', function() {

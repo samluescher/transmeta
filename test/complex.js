@@ -1,35 +1,35 @@
-var transmeta = require('../'),
+var transmeta = require('../lib/'),
     cities = require('./data/cities'),
     _ = require('underscore'),
     assert = require('assert');
 
-describe('Series Import', function() {
+describe('Complex Transformation', function() {
 
     var years = ['1950', '1955', '1960', '1965', '1970', '1975', '1980', '1985', '1990', '1995', '2000', '2005', '2010', '2015', '2020', '2025'],
         meta = [
             {
-                'to': 'geometry.coordinates',
                 'from': ['Latitude', 'Longitude'],
+                'to': 'geometry.coordinates',
                 'type': 'LatLng',
             },
             {
-                'to': 'properties.City.Name',
                 'from': 'Urban Agglomeration',
+                'to': 'properties.City.Name',
                 'type': 'String',
             },
             {
-                'to': 'properties.Country',
                 'from': 'Country',
+                'to': 'properties.Country',
                 'type': 'String',
             },
             {
-                'to': 'properties.City.Code',
                 'from': 'City Code',
+                'to': 'properties.City.Code',
                 'type': 'String',
             },
             {
-                'to': 'properties.Population',
                 'from': years,
+                'to': 'properties.Population',
                 'type': 'Number',
                 'series': [
                     {
