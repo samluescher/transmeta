@@ -3,7 +3,7 @@
   "version": "0.8.0",
   "description": "A data transformation library to convert and filter JSON documents into differently structured data, using simple transformation descriptions.",
   "engines": {
-    "node": "0.8"
+    "node": ">=0.8"
   },
   "dependencies": {
     "underscore": ">=1.5",
