@@ -108,7 +108,6 @@ describe('Simple transformation', function() {
     });
 
     dataTransformFiltered.on('data', function(model, transformed) {
-        console.log('=====', model);
         it('should not emit an instance of passed Document class in strict mode when a transformation error happens, still emit the transformed object, but with error instances in the data', function() {
             assert.equal(model, null);
     
