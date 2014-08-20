@@ -5,8 +5,7 @@ var csv = 'Country code,Country,City Code,Urban Agglomeration,Latitude,Longitude
     + '356,India,21228,Delhi,28.67,77.22,1369369,1781624,2282962,2845042,3530693,4425964,5558481,7325185,9725885,12407372,15732304,18670494,21935142,25628951,29273777,32935013\n'
     + '156,China,20656,Shanghai,31.23,121.47,4300942,5846383,6819634,6428131,6036492,5626640,5966171,6846765,7823028,10449535,13958981,16590006,19554059,22962830,26120519,28403898',
     csvLines = csv.split('\n'),
-    header = csvLines[0].split(','),
-    originalDocuments = [];
+    header = csvLines[0].split(',');
 
 for (var i = 1; i < csvLines.length; i++) {
     var row = csvLines[i].split(','),
