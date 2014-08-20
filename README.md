@@ -22,9 +22,11 @@ Examples
 
 Consider the following object:
 
+```javascript
 	var obj = {
 		numbers: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 	};
+```
 
 Assuming we would like to traverse the numbers array, and construct a second object where the numbers are filtered into two separate arrays, one containing odd numbers only, and another one containing the even numbers.
 
@@ -33,7 +35,7 @@ We can describe this transformation with the following meta information:
 ```javascript
 	// we instantiate a new DataTransform instance:
 	var oddEven = new transmeta.DataTransform()
-		// we add the meta description for odd numbers:
+		// we add a meta description for odd numbers:
 		.field({
 			'from': 'numbers',         // the element the source data is from
 			'to': 'odd',               // the destination element
