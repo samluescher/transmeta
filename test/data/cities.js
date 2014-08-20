@@ -9,6 +9,7 @@ var csv =
 
 var cities = new transmeta.DocumentSet({delimiter: ','});
 csvLines.forEach(function(row, index) {
+	console.log('====>', row);
 	if (index == 0) {
 		cities.header(row);
 	} else {
