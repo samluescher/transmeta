@@ -1,71 +1,176 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
+    <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Transmeta by samluescher</title>
+    <meta name="description" content="Transmeta : A data transformation library to filter and convert JSON documents into other structured data, using simple meta descriptions instead of code.">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Transmeta</title>
   </head>
+
   <body>
-    <div class="wrapper">
-      <header>
-        <h1>Transmeta</h1>
-        <p>A data transformation library to filter and convert JSON documents into other structured data, using simple meta descriptions.</p>
 
-        <p class="view"><a href="https://github.com/samluescher/transmeta">View the Project on GitHub <small>samluescher/transmeta</small></a></p>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/samluescher/transmeta">View on GitHub</a>
 
+          <h1 id="project_title">Transmeta</h1>
+          <h2 id="project_tagline">A data transformation library to filter and convert JSON documents into other structured data, using simple meta descriptions instead of code.</h2>
 
-        <ul>
-          <li><a href="https://github.com/samluescher/transmeta/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/samluescher/transmeta/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/samluescher/transmeta">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/samluescher/transmeta/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/samluescher/transmeta/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<p>This is the age of micro formats and messy CSV files containing valuable data. While similar tools usually focus on tabular data and programming instructions to transform it, this library can take any source structure—think JSON or nested XML document, but tables as well—and transform it into an arbitrary destination format. Instead of functions to transform the data, it is based on simple meta information that describes field conversion, type casting, filtering and nesting.</p>
+
+<p>This meta information can easily be reused and, rather than programming code, a GUI may be built that allows novice user to create complex data transformations.</p>
+
+<p>Examples: Convert an untyped, badly formatted CSV file into valid GeoJSON geometry. Take spreadsheet data where rows are cities and 50 columns list population numbers per year, and turn it into a data stream that emits a Mongoose model instance for each city, each year.</p>
+
+<h2>
+<a name="examples" class="anchor" href="#examples"><span class="octicon octicon-link"></span></a>Examples</h2>
+
+<h3>
+<a name="simple-number-filtering" class="anchor" href="#simple-number-filtering"><span class="octicon octicon-link"></span></a>Simple number filtering</h3>
+
+<p>Consider the following object:</p>
+
+<div class="highlight highlight-javascript"><pre>    <span class="kd">var</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nx">numbers</span><span class="o">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+    <span class="p">};</span>
+</pre></div>
+
+<p>Assuming we would like to traverse the numbers array, and construct a second object where the numbers are filtered into two separate arrays, one containing odd numbers only, and another one containing the even numbers.</p>
+
+<p>We can describe this transformation with the following meta information:</p>
+
+<div class="highlight highlight-javascript"><pre>    <span class="c1">// we instantiate a new DataTransform instance:</span>
+    <span class="kd">var</span> <span class="nx">oddEven</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">transmeta</span><span class="p">.</span><span class="nx">DataTransform</span><span class="p">()</span>
+        <span class="c1">// we add a meta description for odd numbers:</span>
+        <span class="p">.</span><span class="nx">field</span><span class="p">({</span>
+            <span class="s1">'from'</span><span class="o">:</span> <span class="s1">'numbers'</span><span class="p">,</span>         <span class="c1">// the element the source data is from</span>
+            <span class="s1">'to'</span><span class="o">:</span> <span class="s1">'odd'</span><span class="p">,</span>               <span class="c1">// the destination element</span>
+            <span class="s1">'type'</span><span class="o">:</span> <span class="s1">'Array'</span><span class="p">,</span>           <span class="c1">// the type of the destination element</span>
+            <span class="s1">'options'</span><span class="o">:</span> <span class="p">{</span>
+                <span class="s1">'filters'</span><span class="o">:</span> <span class="p">[</span><span class="s1">'isOdd'</span><span class="p">]</span>   <span class="c1">// a built-in number filter for odd numbers</span>
+            <span class="p">}</span>
+        <span class="p">})</span>
+        <span class="c1">// and the same for even numbers:</span>
+        <span class="p">.</span><span class="nx">field</span><span class="p">({</span>
+            <span class="s1">'from'</span><span class="o">:</span> <span class="s1">'numbers'</span><span class="p">,</span>
+            <span class="s1">'to'</span><span class="o">:</span> <span class="s1">'even'</span><span class="p">,</span>
+            <span class="s1">'type'</span><span class="o">:</span> <span class="s1">'Array'</span><span class="p">,</span>
+            <span class="s1">'options'</span><span class="o">:</span> <span class="p">{</span>
+                <span class="s1">'filters'</span><span class="o">:</span> <span class="p">[</span><span class="s1">'isEven'</span><span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+</pre></div>
+
+<p>Finally, we run the transformation, and asyncronously receive the transformed result:</p>
+
+<div class="highlight highlight-javascript"><pre>    <span class="nx">oddEven</span><span class="p">.</span><span class="nx">transform</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">transformed</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">transformed</span><span class="p">);</span>
+            <span class="c1">// { odd: [ 1, 3, 5, 7, 9 ], even: [ 2, 4, 6, 8, 10 ] }</span>
+        <span class="p">});</span>
+</pre></div>
+
+<h3>
+<a name="emitting-a-series-of-models" class="anchor" href="#emitting-a-series-of-models"><span class="octicon octicon-link"></span></a>Emitting a series of models</h3>
+
+<p>Consider the following CSV data, exported from a spreadsheet listing urban agglomerations per year:</p>
+
+<pre lang="csv"><code>    Country,City,Latitude,Longitude,1950,1955,1960,1965,1970,1975,1980,1985,1990,1995,2000,2005,2010,2015,2020,2025
+    Japan,Tokyo,35.69,139.75,11274641,13712679,16678821,20284371,23297503,26614733,28548512,30303794,32530003,33586573,34449908,35621544,36932780,38196677,38707439,38661394
+    India,Delhi,28.67,77.22,1369369,1781624,2282962,2845042,3530693,4425964,5558481,7325185,9725885,12407372,15732304,18670494,21935142,25628951,29273777,32935013
+    China,Shanghai,31.23,121.47,4300942,5846383,6819634,6428131,6036492,5626640,5966171,6846765,7823028,10449535,13958981,16590006,19554059,22962830,26120519,28403898'
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>We can easily turn this into a <code>DocumentSet</code> using the following code:</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<div class="highlight highlight-javascript"><pre>    <span class="c1">// we define a comma-delimited DocumentSet</span>
+    <span class="kd">var</span> <span class="nx">cities</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">transmeta</span><span class="p">.</span><span class="nx">DocumentSet</span><span class="p">({</span><span class="nx">delimiter</span><span class="o">:</span> <span class="s1">','</span><span class="p">});</span>
+    <span class="c1">// for each row in the data:</span>
+    <span class="nx">csvData</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">'\n'</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="nx">row</span><span class="p">,</span> <span class="nx">index</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// the first row is the header</span>
+            <span class="nx">cities</span><span class="p">.</span><span class="nx">header</span><span class="p">(</span><span class="nx">row</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// all others are added as Documents</span>
+            <span class="nx">cities</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">row</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+</pre></div>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<p>Next, we would like to transform this into a series of Mongoose documents with the following schema:</p>
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+<div class="highlight highlight-javascript"><pre>    <span class="kd">var</span> <span class="nx">schema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">({</span> 
+        <span class="nx">name</span><span class="o">:</span> <span class="nb">String</span><span class="p">,</span> 
+        <span class="nx">population</span><span class="o">:</span> <span class="nb">Number</span><span class="p">,</span> 
+        <span class="nx">year</span><span class="o">:</span> <span class="nb">Date</span> 
+    <span class="p">});</span>
+    <span class="kd">var</span> <span class="nx">CityModel</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">'City'</span><span class="p">,</span> <span class="nx">schema</span><span class="p">);</span>
+</pre></div>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<p>The meta description to perform this transformation looks quite simple:</p>
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+<div class="highlight highlight-javascript"><pre>    <span class="kd">var</span> <span class="nx">meta</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s1">'from'</span><span class="o">:</span> <span class="s1">'City'</span><span class="p">,</span>
+            <span class="s1">'to'</span><span class="o">:</span> <span class="s1">'name'</span><span class="p">,</span>
+            <span class="s1">'type'</span><span class="o">:</span> <span class="s1">'String'</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s1">'from'</span><span class="o">:</span> <span class="p">[</span><span class="mi">1950</span><span class="p">,</span><span class="mi">1955</span><span class="p">,</span><span class="mi">1960</span><span class="p">,</span><span class="mi">1965</span><span class="p">,</span><span class="mi">1970</span><span class="p">,</span><span class="mi">1975</span><span class="p">,</span><span class="mi">1980</span><span class="p">,</span><span class="mi">1985</span><span class="p">,</span><span class="mi">1990</span><span class="p">,</span><span class="mi">1995</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="mi">2005</span><span class="p">,</span><span class="mi">2010</span><span class="p">,</span><span class="mi">2015</span><span class="p">,</span><span class="mi">2020</span><span class="p">,</span><span class="mi">2025</span><span class="p">],</span>
+            <span class="s1">'to'</span><span class="o">:</span> <span class="s1">'population'</span><span class="p">,</span>
+            <span class="s1">'type'</span><span class="o">:</span> <span class="s1">'Number'</span><span class="p">,</span>
+            <span class="s1">'series'</span><span class="o">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="s1">'to'</span><span class="o">:</span> <span class="s1">'year'</span><span class="p">,</span>
+                    <span class="s1">'from'</span><span class="o">:</span> <span class="s1">'$series.from'</span><span class="p">,</span>
+                    <span class="s1">'type'</span><span class="o">:</span> <span class="s1">'Date'</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">]</span>
+        <span class="p">},</span>
+    <span class="p">];</span>
+</pre></div>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<p>Running this transformation will emit a City instance for each year, per each city:</p>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<div class="highlight highlight-javascript"><pre>    <span class="c1">// we create a new DataTransform instance with above meta information</span>
+    <span class="k">new</span> <span class="nx">transmeta</span><span class="p">.</span><span class="nx">DataTransform</span><span class="p">(</span><span class="nx">meta</span><span class="p">)</span>
+        <span class="c1">// we transform the cities set with the Mongoose model as destination type</span>
+        <span class="p">.</span><span class="nx">tranform</span><span class="p">(</span><span class="nx">cities</span><span class="p">,</span> <span class="nx">CityModel</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nb">document</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// we save each emitted model instance in the database      </span>
+            <span class="nb">document</span><span class="p">.</span><span class="nx">save</span><span class="p">();</span>
+        <span class="p">});</span>
+</pre></div>
       </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/samluescher">samluescher</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Transmeta maintained by <a href="https://github.com/samluescher">samluescher</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-    <script src="javascripts/scale.fix.js"></script>
+
     
+
   </body>
 </html>
