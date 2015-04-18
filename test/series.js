@@ -74,6 +74,7 @@ describe('Series Transformation', function() {
                 it('should emit series of documents for each year column, and assign the columns name to a field', function() {
                     var original = _.where(cities, {'City Code': cityCode});
                     assert.equal(original.length, 1);
+                    console.log(fullYear, original[0]);
                     assert.equal(original[0][fullYear+''], doc.get('properties.Population'));
                 });
             });

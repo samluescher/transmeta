@@ -50,7 +50,6 @@ describe('Joining Flight Data', function() {
 
 	// TODO: join routes with airport coordinates, and produce a LineString
 
-	/*
 	var routesToGeoJSON = new transmeta.DataTransform([
 		{
 			'to': 'geometry.type',
@@ -61,7 +60,7 @@ describe('Joining Flight Data', function() {
 			'from': ['$origin.geometry.coordinates', '$destination.geometry.coordinates'],
 			'type': 'Array'
 		}
-	]);*/
+	]);
 
 
 	/*it('asd', function(done) {
