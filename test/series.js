@@ -68,7 +68,7 @@ describe('Series Transformation', function() {
                 it('should convert the year into a Date object', function() {
                     var year = doc.get('properties.Year');
                     assert(year instanceof Date);
-                    fullYear = year.getFullYear() + 1;
+                    fullYear = year.getUTCFullYear();
                 });
 
                 it('should emit series of documents for each year column, and assign the columns name to a field', function() {
